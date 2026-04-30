@@ -1,47 +1,43 @@
 const https = require('https');
 
 export default function handler(req, res) {
-    // Se for um navegador acessando, mostra uma página de erro genérica (Disfarce)
+    // 1. DISFARCE: Se for navegador, mostra erro de manutenção (Status 200)
     if (req.headers['user-agent']?.includes('Mozilla')) {
         res.setHeader('Content-Type', 'text/html; charset=utf-8');
-        return res.end(`
-            <!DOCTYPE html>
-            <html>
-            <head><title>Página em Manutenção</title></head>
-            <body style="font-family:Arial; text-align:center; padding:50px; background:#f4f4f4; color:#666;">
-                <div style="max-width:500px; margin:auto; background:#fff; padding:30px; border-radius:8px; border:1px solid #ddd;">
-                    <h1 style="color:#333;">Estamos em manutenção</h1>
-                    <p>Desculpe o transtorno. No momento estamos realizando atualizações técnicas no nosso servidor.</p>
-                    <p>O serviço deve ser normalizado em algumas horas.</p>
-                    <hr style="border:0; border-top:1px solid #eee;">
-                    <small>Copyright © 2026 JK Infraestrutura Digital</small>
+        return res.status(200).end(`
+            <body style="font-family:sans-serif; text-align:center; padding:50px; background:#f9f9f9;">
+                <div style="max-width:400px; margin:auto; background:#fff; padding:20px; border:1px solid #eee;">
+                    <h2>Serviço em Atualização</h2>
+                    <p>Estamos otimizando nossos servidores. Tente novamente mais tarde.</p>
                 </div>
             </body>
-            </html>
         `);
     }
 
-    // Código do Túnel para o App VPN (Tráfego de dados)
+    // 2. TÚNEL XHTTP: Encaminha para a sua VPS
     const options = {
-        hostname: '167.234.237.25',
+        hostname: '137.131.143.111',
         port: 443,
         path: req.url,
         method: req.method,
         headers: {
             ...req.headers,
-            'host': '167.234.237.25',
+            'host': '137.131.143.111',
             'connection': 'keep-alive'
         },
         rejectUnauthorized: false
     };
 
     const proxyReq = https.request(options, (proxyRes) => {
+        // Repassa o status e os headers vindos do Xray (geralmente 101 ou 200 no xHTTP)
         res.writeHead(proxyRes.statusCode, proxyRes.headers);
         proxyRes.pipe(res);
     });
 
+    // 3. SE A VPS FALHAR: Em vez de 400, manda o 503 (Service Unavailable)
     proxyReq.on('error', (err) => {
-        res.status(502).end('GATEWAY_TIMEOUT');
+        console.error('Erro de Conexão:', err.message);
+        res.status(503).end('Service Unavailable'); 
     });
 
     req.pipe(proxyReq);
