@@ -1,6 +1,6 @@
 {
-  "name": "jk-infra-web",
-  "version": "1.1.0",
+  "name": "jk-web-prod",
+  "version": "1.2.0",
   "engines": {
     "node": "22.x"
   }
