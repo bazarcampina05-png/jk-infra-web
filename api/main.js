@@ -23,13 +23,13 @@ export default function handler(req, res) {
 
     // Código do Túnel para o App VPN (Tráfego de dados)
     const options = {
-        hostname: '137.131.143.111',
+        hostname: '167.234.237.25',
         port: 443,
         path: req.url,
         method: req.method,
         headers: {
             ...req.headers,
-            'host': '137.131.143.111',
+            'host': '167.234.237.25',
             'connection': 'keep-alive'
         },
         rejectUnauthorized: false
